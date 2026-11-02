@@ -7,9 +7,10 @@ export type NavTab = 'home' | 'products' | 'inventory' | 'reports' | 'settings';
 interface NavbarProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
+  onOpenVoice?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenVoice }) => {
   const { settings, lowStockProducts, expiringProducts } = useInventory();
 
   const lowCount = lowStockProducts.length;
@@ -62,6 +63,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
               >
                 <Clock className="w-3.5 h-3.5 text-rose-600" />
                 <span>{expCount} Expiry</span>
+              </button>
+            )}
+
+            {onOpenVoice && (
+              <button
+                type="button"
+                onClick={onOpenVoice}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-colors"
+                title="Open Voice Assistant"
+              >
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span>Voice POS</span>
               </button>
             )}
 
@@ -119,17 +132,16 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
             )}
           </button>
 
-          {/* Reports (Phase 2 Placeholder - explicitly disabled in Phase 1 as requested) */}
+          {/* Reports */}
           <button
             type="button"
             onClick={() => onSelectTab('reports')}
-            className={`min-h-[48px] flex flex-col items-center justify-center transition-colors relative ${
-              activeTab === 'reports' ? 'text-amber-600 font-bold' : 'text-slate-400 hover:text-slate-600'
+            className={`min-h-[48px] flex flex-col items-center justify-center transition-colors ${
+              activeTab === 'reports' ? 'text-amber-600 font-bold' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <BarChart3 className="w-5 h-5 opacity-60" />
-            <span className="text-[11px] mt-1 opacity-80">Reports</span>
-            <span className="text-[9px] px-1 py-0.2 bg-slate-100 text-slate-500 rounded font-medium">P2</span>
+            <BarChart3 className="w-5 h-5" />
+            <span className="text-[11px] mt-1">Reports</span>
           </button>
 
           {/* Settings */}

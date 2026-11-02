@@ -1,6 +1,6 @@
 {
-  "summary": "Updated implementation plan for Munshi Phase 1 incorporating user corrections: atomic OPENING_STOCK ledger entries, configurable expiry warning window in settings, disabled Reports tab placeholder, manual barcode input with scanning-coming-soon badge, and Step 1 scope.",
-  "updatedAt": "2026-11-02T16:38:34.491752410Z",
+  "summary": "Phase 3 Voice MVP Implementation Plan: Offline browser Web Speech API voice pipeline (STT/TTS), Indic number & unit normalizer (Telugu, Hindi, English, Hinglish), structured JSON intent classifier, product alias matcher, conversational confirmation modal with spoken prompts, and transactional execution for billing, stock changes, and queries.",
+  "updatedAt": "2026-11-02T17:19:12.728233539Z",
   "requestFeedback": true,
   "userFacing": true
 }

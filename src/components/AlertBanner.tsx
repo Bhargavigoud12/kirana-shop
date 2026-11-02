@@ -1,32 +1,67 @@
 import React from 'react';
-import { AlertTriangle, Clock, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Clock, ArrowRight, AlertOctagon } from 'lucide-react';
 import { useInventory } from '../context/InventoryContext';
+import { InventoryTab } from '../screens/InventoryScreen';
 
 interface AlertBannerProps {
-  onNavigateToInventory: (filterTab?: 'low_stock' | 'expiry') => void;
+  onNavigateToInventory: (filterTab: InventoryTab) => void;
 }
 
 export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory }) => {
-  const { lowStockProducts, expiringProducts, expiredProducts, settings } = useInventory();
+  const { lowStockProducts, outOfStockProducts, expiredProducts, expiringSoonProducts, settings } = useInventory();
 
-  if (lowStockProducts.length === 0 && expiringProducts.length === 0) {
+  const hasLowStock = lowStockProducts.length > 0;
+  const hasOutOfStock = outOfStockProducts.length > 0;
+  const totalExpiring = expiredProducts.length + expiringSoonProducts.length;
+
+  if (!hasLowStock && !hasOutOfStock && totalExpiring === 0) {
     return null;
   }
 
   return (
     <div className="space-y-2 mb-4">
-      {/* Low Stock Banner */}
-      {lowStockProducts.length > 0 && (
-        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-3 shadow-xs">
+      {/* 1. Out of Stock Critical Danger Banner */}
+      {hasOutOfStock && (
+        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 flex items-center justify-between gap-3 shadow-xs animate-in fade-in">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0">
+              <AlertOctagon className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-rose-950 truncate flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0" />
+                <span>{outOfStockProducts.length} items completely OUT OF STOCK!</span>
+              </p>
+              <p className="text-[11px] text-rose-700 truncate mt-0.5">
+                {outOfStockProducts.slice(0, 2).map((p) => p.name).join(', ')}
+                {outOfStockProducts.length > 2 ? ` +${outOfStockProducts.length - 2} more` : ''}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigateToInventory('out_of_stock')}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 transition-all active:scale-[0.98] min-h-[38px]"
+          >
+            <span>Restock</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* 2. Low Stock Warning Amber Banner */}
+      {hasLowStock && (
+        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 flex items-center justify-between gap-3 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-amber-900 truncate">
-                {lowStockProducts.length} items low or out of stock!
+              <p className="text-xs font-bold text-amber-950 truncate flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                <span>{lowStockProducts.length} items running low on stock</span>
               </p>
-              <p className="text-xs text-amber-700 truncate">
+              <p className="text-[11px] text-amber-800 truncate mt-0.5">
                 {lowStockProducts.slice(0, 2).map((p) => p.name).join(', ')}
                 {lowStockProducts.length > 2 ? ` +${lowStockProducts.length - 2} more` : ''}
               </p>
@@ -35,37 +70,66 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory 
           <button
             type="button"
             onClick={() => onNavigateToInventory('low_stock')}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shrink-0 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition-all active:scale-[0.98] min-h-[38px]"
           >
-            <span>Review</span>
+            <span>Review Low</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {/* Expiry Banner (Driven by configurable settings.expiry_warning_days) */}
-      {expiringProducts.length > 0 && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-between gap-3 shadow-xs">
+      {/* 3. Expiry Warning Banner (Separating Expired vs Expiring Soon) */}
+      {totalExpiring > 0 && (
+        <div
+          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs animate-in fade-in ${
+            expiredProducts.length > 0
+              ? 'bg-rose-50/80 border-rose-300'
+              : 'bg-amber-50/80 border-amber-300'
+          }`}
+        >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center text-rose-700 shrink-0">
+            <div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 ${
+                expiredProducts.length > 0 ? 'bg-rose-600' : 'bg-amber-600'
+              }`}
+            >
               <Clock className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-rose-900 truncate">
-                {expiredProducts.length > 0 ? `${expiredProducts.length} expired & ` : ''}
-                {expiringProducts.length} items near expiry
+              <p
+                className={`text-xs font-bold truncate flex items-center gap-1.5 ${
+                  expiredProducts.length > 0 ? 'text-rose-950' : 'text-amber-950'
+                }`}
+              >
+                {expiredProducts.length > 0 && (
+                  <span className="font-extrabold text-rose-700">
+                    {expiredProducts.length} Expired
+                  </span>
+                )}
+                {expiredProducts.length > 0 && expiringSoonProducts.length > 0 && ' & '}
+                {expiringSoonProducts.length > 0 && (
+                  <span>{expiringSoonProducts.length} Expiring Soon</span>
+                )}
               </p>
-              <p className="text-xs text-rose-700 truncate">
-                Warning window: {settings.expiry_warning_days} days (Sell or return soon)
+              <p
+                className={`text-[11px] truncate mt-0.5 ${
+                  expiredProducts.length > 0 ? 'text-rose-700' : 'text-amber-800'
+                }`}
+              >
+                Window: ≤ {settings.expiry_warning_days} days · Sell or return to supplier soon
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => onNavigateToInventory('expiry')}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shrink-0 transition-colors"
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-white text-xs font-bold shrink-0 transition-all active:scale-[0.98] min-h-[38px] ${
+              expiredProducts.length > 0
+                ? 'bg-rose-600 hover:bg-rose-700'
+                : 'bg-amber-600 hover:bg-amber-700'
+            }`}
           >
-            <span>Inspect</span>
+            <span>Inspect Expiry</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

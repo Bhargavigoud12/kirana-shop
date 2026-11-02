@@ -244,6 +244,11 @@ export class InventoryService {
       });
 
       const prevStock = product.current_stock;
+      if (quantity > prevStock) {
+        throw new Error(
+          `Cannot remove ${quantity} ${product.unit}. Current stock is only ${prevStock} ${product.unit}. Stock cannot become negative.`
+        );
+      }
       const newStock = Math.max(0, Math.round((prevStock - quantity) * 1000) / 1000);
 
       updatedProduct = {

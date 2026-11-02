@@ -3,6 +3,56 @@ import { Product, Category, StockLedgerEntry, AppSettings } from '../types/inven
 import { inventoryService } from '../services/inventoryService';
 import { DEFAULT_SETTINGS } from '../services/seedData';
 
+export interface ExpiryInfo {
+  daysRemaining: number;
+  isExpired: boolean;
+  isToday: boolean;
+  label: string;
+}
+
+export function computeExpiryInfo(expiryDateStr: string | null): ExpiryInfo | null {
+  if (!expiryDateStr) return null;
+  const exp = new Date(expiryDateStr + 'T00:00:00');
+  if (isNaN(exp.getTime())) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffMs = exp.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    const absDays = Math.abs(diffDays);
+    return {
+      daysRemaining: diffDays,
+      isExpired: true,
+      isToday: false,
+      label: absDays === 1 ? 'Expired yesterday' : `Expired ${absDays} days ago`,
+    };
+  } else if (diffDays === 0) {
+    return {
+      daysRemaining: 0,
+      isExpired: false,
+      isToday: true,
+      label: 'Expires today',
+    };
+  } else if (diffDays === 1) {
+    return {
+      daysRemaining: 1,
+      isExpired: false,
+      isToday: false,
+      label: 'Expires tomorrow',
+    };
+  } else {
+    return {
+      daysRemaining: diffDays,
+      isExpired: false,
+      isToday: false,
+      label: `Expires in ${diffDays} days`,
+    };
+  }
+}
+
 interface InventoryContextValue {
   loading: boolean;
   products: Product[];
@@ -11,13 +61,16 @@ interface InventoryContextValue {
   settings: AppSettings;
   // Computed helpers
   activeProducts: Product[];
-  lowStockProducts: Product[];
-  outOfStockProducts: Product[];
-  expiringProducts: Product[];
-  expiredProducts: Product[];
+  lowStockProducts: Product[]; // current_stock <= threshold && current_stock > 0
+  outOfStockProducts: Product[]; // current_stock <= 0
+  expiredProducts: Product[]; // expiry_date < today
+  expiringSoonProducts: Product[]; // today <= expiry_date <= today + warning_days
+  allExpiringProducts: Product[]; // expired + expiring soon
+  expiringProducts: Product[]; // alias for allExpiringProducts
   totalInventoryCostValue: number;
   totalInventoryRetailValue: number;
   totalSkus: number;
+  getExpiryInfo: (dateStr: string | null) => ExpiryInfo | null;
   // Actions
   refreshData: () => Promise<void>;
   createProduct: (
@@ -101,18 +154,18 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return products.filter((p) => p.is_active);
   }, [products]);
 
-  // Low stock products: current_stock <= low_stock_threshold
+  // Low stock products: STRICTLY current_stock <= low_stock_threshold && current_stock > 0
   const lowStockProducts = useMemo(() => {
-    return activeProducts.filter((p) => p.current_stock <= p.low_stock_threshold);
+    return activeProducts.filter((p) => p.current_stock <= p.low_stock_threshold && p.current_stock > 0);
   }, [activeProducts]);
 
-  // Out of stock products: current_stock <= 0
+  // Out of stock products: STRICTLY current_stock <= 0
   const outOfStockProducts = useMemo(() => {
     return activeProducts.filter((p) => p.current_stock <= 0);
   }, [activeProducts]);
 
-  // Expiring soon products: uses configurable settings.expiry_warning_days
-  const { expiringProducts, expiredProducts } = useMemo(() => {
+  // Expiring soon & Expired products (driven by configurable settings.expiry_warning_days)
+  const { expiredProducts, expiringSoonProducts, allExpiringProducts } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -121,7 +174,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     thresholdDate.setDate(thresholdDate.getDate() + (settings.expiry_warning_days || 7));
 
     const expired: Product[] = [];
-    const expiring: Product[] = [];
+    const expiringSoon: Product[] = [];
 
     activeProducts.forEach((p) => {
       if (!p.expiry_date) return;
@@ -131,13 +184,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (exp < today) {
         expired.push(p);
       } else if (exp <= thresholdDate) {
-        expiring.push(p);
+        expiringSoon.push(p);
       }
     });
 
     return {
       expiredProducts: expired,
-      expiringProducts: [...expired, ...expiring],
+      expiringSoonProducts: expiringSoon,
+      allExpiringProducts: [...expired, ...expiringSoon],
     };
   }, [activeProducts, settings.expiry_warning_days]);
 
@@ -152,6 +206,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [activeProducts]);
 
   const totalSkus = activeProducts.length;
+
+  const getExpiryInfo = useCallback((dateStr: string | null) => {
+    return computeExpiryInfo(dateStr);
+  }, []);
 
   // Actions wrapped to auto-refresh local state
   const createProduct = async (
@@ -232,11 +290,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         activeProducts,
         lowStockProducts,
         outOfStockProducts,
-        expiringProducts,
         expiredProducts,
+        expiringSoonProducts,
+        allExpiringProducts,
+        expiringProducts: allExpiringProducts,
         totalInventoryCostValue,
         totalInventoryRetailValue,
         totalSkus,
+        getExpiryInfo,
         refreshData,
         createProduct,
         updateProduct,

@@ -1,31 +1,75 @@
-import React, { useState } from 'react';
-import { Database, Clock, Store, RotateCcw, Check, Sparkles, AlertCircle, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Database,
+  Clock,
+  Store,
+  RotateCcw,
+  Check,
+  Download,
+  Upload,
+  Cloud,
+  HardDrive,
+  Globe,
+  MapPin,
+  Phone,
+  User,
+  AlertTriangle,
+} from 'lucide-react';
 import { useInventory } from '../context/InventoryContext';
+import { backupService } from '../services/backupService';
 
 export const SettingsScreen: React.FC = () => {
-  const { settings, updateSettings, resetDemoData, products, ledger, categories, expiringProducts } = useInventory();
+  const {
+    settings,
+    updateSettings,
+    resetDemoData,
+    products,
+    ledger,
+    categories,
+    expiringProducts,
+    refreshData,
+  } = useInventory();
 
+  // Settings State
   const [expiryDays, setExpiryDays] = useState<number>(settings.expiry_warning_days || 7);
   const [storeName, setStoreName] = useState<string>(settings.store_name);
   const [ownerName, setOwnerName] = useState<string>(settings.owner_name);
   const [phone, setPhone] = useState<string>(settings.phone_number);
+  const [address, setAddress] = useState<string>('Main Bazaar, Near Clock Tower, Telangana');
+  const [language, setLanguage] = useState<'telugu' | 'hindi' | 'english' | 'hinglish'>(
+    settings.language || 'hinglish'
+  );
+  const [currency, setCurrency] = useState<string>(settings.currency || '₹');
+
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState<boolean>(false);
+  const [storageUsage, setStorageUsage] = useState<{ usageMB: string; quotaMB: string }>({
+    usageMB: '0.8',
+    quotaMB: 'Local Offline',
+  });
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    backupService.getStorageEstimate().then(setStorageUsage);
+  }, []);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await updateSettings({
-        expiry_warning_days: Math.max(1, Math.min(90, Number(expiryDays) || 7)),
         store_name: storeName.trim() || 'Munshi Kirana Store',
         owner_name: ownerName.trim() || 'Kirana Owner',
         phone_number: phone.trim(),
+        language,
+        currency,
+        expiry_warning_days: Math.max(1, Math.min(90, Number(expiryDays) || 7)),
       });
-      setSaveStatus('Settings updated successfully!');
+      setSaveStatus('Store profile and preferences saved!');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
       console.error(err);
-      setSaveStatus('Failed to update settings');
+      setSaveStatus('Failed to update profile');
     }
   };
 
@@ -48,180 +92,282 @@ export const SettingsScreen: React.FC = () => {
     }
   };
 
+  const handleExportBackup = async () => {
+    try {
+      await backupService.exportBackup();
+      setSaveStatus('Complete database JSON backup downloaded!');
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err: any) {
+      alert(err.message || 'Backup export failed');
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const confirm = window.confirm(
+      `Restore database from "${file.name}"?\n\nWARNING: This will replace all existing products, bills, customers, and stock ledger entries with the contents of the backup file.`
+    );
+    if (!confirm) {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const res = await backupService.importBackup(text);
+      await refreshData();
+      setSaveStatus(`Database successfully restored (${res.recordCount} records loaded)!`);
+      setTimeout(() => setSaveStatus(null), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Backup import failed');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20">
       {/* Title */}
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Settings & Database</h2>
+        <h2 className="text-xl font-bold text-slate-900">Settings & Local Backup</h2>
         <p className="text-xs text-slate-500">
-          Configure local store settings, alert thresholds, and monitor offline IndexedDB storage.
+          Shop profile, Indic language preference, offline backup JSON, and database controls
         </p>
       </div>
 
       {saveStatus && (
-        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-600" />
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-xs animate-in fade-in">
+          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{saveStatus}</span>
         </div>
       )}
 
-      {/* Expiry Warning Window Configuration (Explicit User Requirement) */}
-      <section className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-            <Clock className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Expiry Alert Warning Window</h3>
-            <p className="text-xs text-slate-500">
-              Days before product expiry to trigger alert banners and highlights
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
-              Warning Window (in Days)
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                min="1"
-                max="90"
-                value={expiryDays}
-                onChange={(e) => setExpiryDays(parseInt(e.target.value) || 1)}
-                className="w-32 px-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"
-              />
-              <span className="text-xs text-slate-600 font-medium">days before expiry</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              Currently, {expiringProducts.length} items fall within this {expiryDays}-day warning window.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSaveSettings}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
-          >
-            <Check className="w-3.5 h-3.5" />
-            <span>Save Warning Window</span>
-          </button>
-        </div>
-      </section>
-
-      {/* Store Profile */}
-      <section className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-            <Store className="w-4 h-4" />
+      {/* Shop Profile & Language Settings Form */}
+      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+            <Store className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">Kirana Store Profile</h3>
-            <p className="text-xs text-slate-500">Details displayed on counter and bills</p>
+            <p className="text-xs text-slate-500">Shop name, address, and primary language</p>
           </div>
         </div>
 
-        <form onSubmit={handleSaveSettings} className="space-y-3">
+        <form onSubmit={handleSaveProfile} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Shop Name</label>
+            <label className="block text-xs font-bold text-slate-800 mb-1">Shop / Dukaan Name</label>
             <input
               type="text"
+              required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
-              placeholder="e.g. Sri Lakshmi Kirana General Store"
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold text-slate-900"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Owner Name</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1">Owner Name</label>
               <input
                 type="text"
+                required
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
-                placeholder="Owner name"
+                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Phone Number</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1">Phone Number</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
-                placeholder="+91..."
+                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium font-mono"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-800 mb-1">Shop Address</label>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+              placeholder="e.g. Main Road, Beside SBI ATM, Hyderabad"
+            />
+          </div>
+
+          {/* Language & Currency Preference */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">Language Preference</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white font-medium"
+              >
+                <option value="hinglish">Hinglish (Mixed)</option>
+                <option value="hindi">Hindi (हिंदी)</option>
+                <option value="telugu">Telugu (తెలుగు)</option>
+                <option value="english">English (Indian)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">Currency Symbol</label>
+              <input
+                type="text"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold tabular-nums"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold transition-colors"
+            className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all active:scale-[0.98] shadow-md min-h-[48px]"
           >
-            Update Store Profile
+            Save Shop Profile & Preferences
           </button>
         </form>
       </section>
 
-      {/* Offline Database Status & Health */}
-      <section className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <Database className="w-4 h-4" />
+      {/* Expiry Warning Window Configuration */}
+      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Local IndexedDB Database</h3>
-            <p className="text-xs text-slate-500">Offline-first local storage status</p>
+            <h3 className="text-sm font-bold text-slate-900">Expiry Alert Warning Window</h3>
+            <p className="text-xs text-slate-500">
+              Threshold in days before expiry date to trigger warnings and alerts
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 py-2 mb-3">
-          <div className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
-            <span className="text-xs text-slate-500 block">Products</span>
-            <span className="text-base font-bold text-slate-900 tabular-nums">{products.length}</span>
+        <div className="flex items-center gap-3 pt-1">
+          <input
+            type="number"
+            min="1"
+            max="90"
+            value={expiryDays}
+            onChange={(e) => setExpiryDays(parseInt(e.target.value) || 1)}
+            className="w-28 px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-extrabold tabular-nums"
+          />
+          <span className="text-xs font-semibold text-slate-700">days before product expiry</span>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await updateSettings({ expiry_warning_days: Number(expiryDays) || 7 });
+              setSaveStatus('Expiry warning window updated!');
+              setTimeout(() => setSaveStatus(null), 3000);
+            }}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold ml-auto min-h-[40px]"
+          >
+            Update
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-400">
+          Currently, {expiringProducts.length} items trigger alert banners within this {expiryDays}-day window.
+        </p>
+      </section>
+
+      {/* Local Database Backup & Restore (JSON Export / Import) */}
+      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+            <HardDrive className="w-5 h-5" />
           </div>
-          <div className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
-            <span className="text-xs text-slate-500 block">Ledger Logs</span>
-            <span className="text-base font-bold text-slate-900 tabular-nums">{ledger.length}</span>
-          </div>
-          <div className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
-            <span className="text-xs text-slate-500 block">Categories</span>
-            <span className="text-base font-bold text-slate-900 tabular-nums">{categories.length}</span>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Local Data Backup & Restore</h3>
+            <p className="text-xs text-slate-500">
+              Download complete offline database backup or restore from previous JSON file
+            </p>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-600 space-y-1">
-          <p className="flex items-center gap-1 font-semibold text-slate-800">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            Database Engine: IndexedDB (munshi_kirana_db v1)
-          </p>
-          <p>Persistence: Fully local, zero network latency. Data remains saved across browser reloads.</p>
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+          <div>
+            <span className="font-semibold text-slate-800 block">Device Storage Estimate:</span>
+            <span className="text-slate-500 text-[11px]">Usage: ~{storageUsage.usageMB} MB ({storageUsage.quotaMB})</span>
+          </div>
+          <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+            ● 100% Offline
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
+          {/* Export Button */}
+          <button
+            type="button"
+            onClick={handleExportBackup}
+            className="p-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition-all active:scale-[0.98] min-h-[48px] flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export JSON Backup</span>
+          </button>
+
+          {/* Import Button */}
+          <div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".json"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full p-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold transition-all active:scale-[0.98] min-h-[48px] flex items-center justify-center gap-1.5"
+            >
+              <Upload className="w-4 h-4 text-slate-600" />
+              <span>Import JSON Backup</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Demo Data Reset */}
-      <section className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Reset Sample Demo Data</h3>
-            <p className="text-xs text-slate-500">
-              Restore the initial Indian kirana demo catalog (rice, atta, oil, milk, biscuits, salt) and opening stock audit entries.
-            </p>
+      {/* Cloud Sync Coming Soon Card (PDF Requirement) */}
+      <section className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl border border-slate-200 p-5 shadow-xs space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Cloud className="w-5 h-5 text-slate-400" />
+            <h3 className="text-sm font-bold text-slate-800">Cloud Sync & Multi-Device Backup</h3>
           </div>
-          <button
-            type="button"
-            disabled={isResetting}
-            onClick={handleResetData}
-            className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0 disabled:opacity-50"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
-            <span>Reset Demo</span>
-          </button>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 uppercase">
+            Coming Soon
+          </span>
         </div>
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Background cloud sync with conflict resolution and multi-device support (owner and helper phones) will be available in the upcoming cloud release. All your local data will sync automatically when cloud is connected.
+        </p>
+      </section>
+
+      {/* Reset Demo Data */}
+      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">Reset Demo Catalog</h3>
+          <p className="text-xs text-slate-500">
+            Restore fresh sample kirana staples, near-expiry dairy items, and initial opening stock ledger entries.
+          </p>
+        </div>
+        <button
+          type="button"
+          disabled={isResetting}
+          onClick={handleResetData}
+          className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors shrink-0 disabled:opacity-50 min-h-[44px]"
+        >
+          <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
+          <span>Reset Demo</span>
+        </button>
       </section>
     </div>
   );
