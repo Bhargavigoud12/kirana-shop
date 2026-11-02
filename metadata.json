@@ -1,0 +1,6 @@
+{
+  "name": "Munshi - Kirana POS & Inventory",
+  "description": "Offline-first, voice-ready POS and inventory management system for Indian kirana stores with audit-grade stock ledger.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

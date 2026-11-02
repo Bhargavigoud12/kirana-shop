@@ -1,0 +1,6 @@
+{
+  "summary": "Updated implementation plan for Munshi Phase 1 incorporating user corrections: atomic OPENING_STOCK ledger entries, configurable expiry warning window in settings, disabled Reports tab placeholder, manual barcode input with scanning-coming-soon badge, and Step 1 scope.",
+  "updatedAt": "2026-11-02T16:38:34.491752410Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
