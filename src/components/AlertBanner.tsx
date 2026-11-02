@@ -22,17 +22,17 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory 
     <div className="space-y-2 mb-4">
       {/* 1. Out of Stock Critical Danger Banner */}
       {hasOutOfStock && (
-        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 flex items-center justify-between gap-3 shadow-xs animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 flex items-center justify-between gap-3 shadow-xs animate-in fade-in transition-colors">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0">
               <AlertOctagon className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-rose-950 truncate flex items-center gap-1.5">
+              <p className="text-xs font-bold text-rose-950 dark:text-rose-200 truncate flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0" />
                 <span>{outOfStockProducts.length} items completely OUT OF STOCK!</span>
               </p>
-              <p className="text-[11px] text-rose-700 truncate mt-0.5">
+              <p className="text-[11px] text-rose-700 dark:text-rose-400 truncate mt-0.5">
                 {outOfStockProducts.slice(0, 2).map((p) => p.name).join(', ')}
                 {outOfStockProducts.length > 2 ? ` +${outOfStockProducts.length - 2} more` : ''}
               </p>
@@ -51,17 +51,17 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory 
 
       {/* 2. Low Stock Warning Amber Banner */}
       {hasLowStock && (
-        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 flex items-center justify-between gap-3 shadow-xs animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 flex items-center justify-between gap-3 shadow-xs animate-in fade-in transition-colors">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-amber-950 truncate flex items-center gap-1.5">
+              <p className="text-xs font-bold text-amber-950 dark:text-amber-200 truncate flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                 <span>{lowStockProducts.length} items running low on stock</span>
               </p>
-              <p className="text-[11px] text-amber-800 truncate mt-0.5">
+              <p className="text-[11px] text-amber-800 dark:text-amber-400 truncate mt-0.5">
                 {lowStockProducts.slice(0, 2).map((p) => p.name).join(', ')}
                 {lowStockProducts.length > 2 ? ` +${lowStockProducts.length - 2} more` : ''}
               </p>
@@ -81,10 +81,10 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory 
       {/* 3. Expiry Warning Banner (Separating Expired vs Expiring Soon) */}
       {totalExpiring > 0 && (
         <div
-          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs animate-in fade-in ${
+          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs animate-in fade-in transition-colors ${
             expiredProducts.length > 0
-              ? 'bg-rose-50/80 border-rose-300'
-              : 'bg-amber-50/80 border-amber-300'
+              ? 'bg-rose-50/80 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800'
+              : 'bg-amber-50/80 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800'
           }`}
         >
           <div className="flex items-center gap-3 min-w-0">
@@ -98,11 +98,11 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory 
             <div className="min-w-0">
               <p
                 className={`text-xs font-bold truncate flex items-center gap-1.5 ${
-                  expiredProducts.length > 0 ? 'text-rose-950' : 'text-amber-950'
+                  expiredProducts.length > 0 ? 'text-rose-950 dark:text-rose-200' : 'text-amber-950 dark:text-amber-200'
                 }`}
               >
                 {expiredProducts.length > 0 && (
-                  <span className="font-extrabold text-rose-700">
+                  <span className="font-extrabold text-rose-700 dark:text-rose-300">
                     {expiredProducts.length} Expired
                   </span>
                 )}
@@ -113,7 +113,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onNavigateToInventory 
               </p>
               <p
                 className={`text-[11px] truncate mt-0.5 ${
-                  expiredProducts.length > 0 ? 'text-rose-700' : 'text-amber-800'
+                  expiredProducts.length > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-amber-800 dark:text-amber-400'
                 }`}
               >
                 Window: ≤ {settings.expiry_warning_days} days · Sell or return to supplier soon

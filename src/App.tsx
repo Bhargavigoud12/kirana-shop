@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { InventoryProvider, useInventory } from './context/InventoryContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar, NavTab } from './components/Navbar';
 import { HomeScreen } from './screens/HomeScreen';
 import { ProductsScreen } from './screens/ProductsScreen';
@@ -29,16 +30,16 @@ const AppContent: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 text-slate-600 space-y-3">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 space-y-3">
         <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
-        <p className="text-sm font-bold text-slate-800">Starting Munshi Offline Engine...</p>
+        <p className="text-sm font-bold text-slate-800 dark:text-white">Starting Munshi Offline Engine...</p>
         <p className="text-xs text-slate-400">Loading IndexedDB storage & kirana catalog</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-150">
       {/* Top Header */}
       <Navbar
         activeTab={activeTab}
@@ -71,8 +72,11 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <InventoryProvider>
-      <AppContent />
-    </InventoryProvider>
+    <ThemeProvider>
+      <InventoryProvider>
+        <AppContent />
+      </InventoryProvider>
+    </ThemeProvider>
   );
 }
+

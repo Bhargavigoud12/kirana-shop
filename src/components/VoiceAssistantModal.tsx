@@ -313,9 +313,9 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl my-4 border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl my-4 border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150 text-slate-900 dark:text-slate-100">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-amber-600 to-amber-700 text-white flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-amber-500/20 bg-gradient-to-r from-amber-600 to-amber-700 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center font-bold text-white shadow-xs">
               <Mic className="w-5 h-5" />
@@ -353,8 +353,8 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         </div>
 
         {/* Language Selector Bar */}
-        <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs">
-          <span className="font-semibold text-slate-600">Language:</span>
+        <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+          <span className="font-semibold text-slate-600 dark:text-slate-400">Language:</span>
           <div className="flex items-center gap-1.5">
             <button
               type="button"

@@ -14,8 +14,11 @@ import {
   Phone,
   User,
   AlertTriangle,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useInventory } from '../context/InventoryContext';
+import { useTheme } from '../context/ThemeContext';
 import { backupService } from '../services/backupService';
 
 export const SettingsScreen: React.FC = () => {
@@ -29,6 +32,7 @@ export const SettingsScreen: React.FC = () => {
     expiringProducts,
     refreshData,
   } = useInventory();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   // Settings State
   const [expiryDays, setExpiryDays] = useState<number>(settings.expiry_warning_days || 7);
@@ -131,72 +135,105 @@ export const SettingsScreen: React.FC = () => {
     <div className="space-y-6 pb-20">
       {/* Title */}
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Settings & Local Backup</h2>
-        <p className="text-xs text-slate-500">
-          Shop profile, Indic language preference, offline backup JSON, and database controls
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Settings & Local Backup</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Shop profile, lighting theme, Indic language preference, offline backup JSON, and database controls
         </p>
       </div>
 
       {saveStatus && (
-        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-xs animate-in fade-in">
-          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center gap-2 shadow-xs animate-in fade-in">
+          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>{saveStatus}</span>
         </div>
       )}
 
+      {/* High-Contrast Dark Mode Toggle Section */}
+      <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3 transition-colors">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">High-Contrast Dark Mode</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Better visibility and reduced screen glare in dim shop environments
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[44px] ${
+              isDark
+                ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-xs'
+                : 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs'
+            }`}
+          >
+            {isDark ? <Sun className="w-4 h-4 text-amber-200" /> : <Moon className="w-4 h-4 text-slate-300" />}
+            <span>{isDark ? 'Dark (Active)' : 'Light (Active)'}</span>
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+          Tailored for Indian kirana store counters during evening hours or under dim fluorescent lighting.
+        </p>
+      </section>
+
       {/* Shop Profile & Language Settings Form */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+      <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-4 transition-colors">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
             <Store className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Kirana Store Profile</h3>
-            <p className="text-xs text-slate-500">Shop name, address, and primary language</p>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Kirana Store Profile</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Shop name, address, and primary language</p>
           </div>
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">Shop / Dukaan Name</label>
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Shop / Dukaan Name</label>
             <input
               type="text"
               required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold text-slate-900"
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Owner Name</label>
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Owner Name</label>
               <input
                 type="text"
                 required
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Phone Number</label>
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Phone Number</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium font-mono"
+                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">Shop Address</label>
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Shop Address</label>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
               placeholder="e.g. Main Road, Beside SBI ATM, Hyderabad"
             />
           </div>
@@ -204,11 +241,11 @@ export const SettingsScreen: React.FC = () => {
           {/* Language & Currency Preference */}
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Language Preference</label>
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Language Preference</label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as any)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white font-medium"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
               >
                 <option value="hinglish">Hinglish (Mixed)</option>
                 <option value="hindi">Hindi (हिंदी)</option>
@@ -218,12 +255,12 @@ export const SettingsScreen: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Currency Symbol</label>
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Currency Symbol</label>
               <input
                 type="text"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold tabular-nums"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold tabular-nums"
               />
             </div>
           </div>
@@ -238,14 +275,14 @@ export const SettingsScreen: React.FC = () => {
       </section>
 
       {/* Expiry Warning Window Configuration */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-3">
+      <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3 transition-colors">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Expiry Alert Warning Window</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Expiry Alert Warning Window</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Threshold in days before expiry date to trigger warnings and alerts
             </p>
           </div>
@@ -258,9 +295,9 @@ export const SettingsScreen: React.FC = () => {
             max="90"
             value={expiryDays}
             onChange={(e) => setExpiryDays(parseInt(e.target.value) || 1)}
-            className="w-28 px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 font-extrabold tabular-nums"
+            className="w-28 px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-extrabold tabular-nums"
           />
-          <span className="text-xs font-semibold text-slate-700">days before product expiry</span>
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">days before product expiry</span>
 
           <button
             type="button"
@@ -269,36 +306,36 @@ export const SettingsScreen: React.FC = () => {
               setSaveStatus('Expiry warning window updated!');
               setTimeout(() => setSaveStatus(null), 3000);
             }}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold ml-auto min-h-[40px]"
+            className="px-4 py-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-xl text-xs font-bold ml-auto min-h-[40px] border border-transparent dark:border-slate-700"
           >
             Update
           </button>
         </div>
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-slate-400 dark:text-slate-500">
           Currently, {expiringProducts.length} items trigger alert banners within this {expiryDays}-day window.
         </p>
       </section>
 
       {/* Local Database Backup & Restore (JSON Export / Import) */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-3">
+      <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3 transition-colors">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0">
             <HardDrive className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Local Data Backup & Restore</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Local Data Backup & Restore</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Download complete offline database backup or restore from previous JSON file
             </p>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+        <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
           <div>
-            <span className="font-semibold text-slate-800 block">Device Storage Estimate:</span>
-            <span className="text-slate-500 text-[11px]">Usage: ~{storageUsage.usageMB} MB ({storageUsage.quotaMB})</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 block">Device Storage Estimate:</span>
+            <span className="text-slate-500 dark:text-slate-400 text-[11px]">Usage: ~{storageUsage.usageMB} MB ({storageUsage.quotaMB})</span>
           </div>
-          <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+          <span className="font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
             ● 100% Offline
           </span>
         </div>
@@ -326,9 +363,9 @@ export const SettingsScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full p-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold transition-all active:scale-[0.98] min-h-[48px] flex items-center justify-center gap-1.5"
+              className="w-full p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all active:scale-[0.98] min-h-[48px] flex items-center justify-center gap-1.5"
             >
-              <Upload className="w-4 h-4 text-slate-600" />
+              <Upload className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               <span>Import JSON Backup</span>
             </button>
           </div>
@@ -336,26 +373,26 @@ export const SettingsScreen: React.FC = () => {
       </section>
 
       {/* Cloud Sync Coming Soon Card (PDF Requirement) */}
-      <section className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl border border-slate-200 p-5 shadow-xs space-y-2">
+      <section className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-2 transition-colors">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-slate-400" />
-            <h3 className="text-sm font-bold text-slate-800">Cloud Sync & Multi-Device Backup</h3>
+            <Cloud className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Cloud Sync & Multi-Device Backup</h3>
           </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 uppercase">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">
             Coming Soon
           </span>
         </div>
-        <p className="text-xs text-slate-500 leading-relaxed">
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
           Background cloud sync with conflict resolution and multi-device support (owner and helper phones) will be available in the upcoming cloud release. All your local data will sync automatically when cloud is connected.
         </p>
       </section>
 
       {/* Reset Demo Data */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex items-center justify-between gap-3">
+      <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex items-center justify-between gap-3 transition-colors">
         <div>
-          <h3 className="text-sm font-bold text-slate-900">Reset Demo Catalog</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Reset Demo Catalog</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Restore fresh sample kirana staples, near-expiry dairy items, and initial opening stock ledger entries.
           </p>
         </div>
@@ -363,7 +400,7 @@ export const SettingsScreen: React.FC = () => {
           type="button"
           disabled={isResetting}
           onClick={handleResetData}
-          className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors shrink-0 disabled:opacity-50 min-h-[44px]"
+          className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors shrink-0 disabled:opacity-50 min-h-[44px] border border-transparent dark:border-slate-700"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
           <span>Reset Demo</span>

@@ -197,16 +197,16 @@ export const StockActionModal: React.FC<StockActionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl my-6 border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl my-6 border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150 text-slate-900 dark:text-slate-100">
         {/* Header */}
         <div
           className={`px-5 py-4 border-b flex items-center justify-between ${
             mode === 'PURCHASE'
-              ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
+              ? 'bg-emerald-50/70 dark:bg-emerald-950/70 border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-100'
               : mode === 'REMOVE_STOCK'
-              ? 'bg-rose-50/70 border-rose-200 text-rose-950'
-              : 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
+              ? 'bg-rose-50/70 dark:bg-rose-950/70 border-rose-200 dark:border-rose-800 text-rose-950 dark:text-rose-100'
+              : 'bg-indigo-50/70 dark:bg-indigo-950/70 border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-100'
           }`}
         >
           <div className="flex items-center gap-2.5">
@@ -239,7 +239,7 @@ export const StockActionModal: React.FC<StockActionModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/80 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
+            className="w-9 h-9 rounded-full bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

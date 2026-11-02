@@ -96,24 +96,24 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
     <div className="space-y-4 pb-20">
       {/* Title & Valuation Header */}
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Inventory Management</h2>
-        <p className="text-xs text-slate-500">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Inventory Management</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Atomic inventory control with low stock & expiry early-warning alerts
         </p>
       </div>
 
       {/* Stock Valuation Strip */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-        <div className="grid grid-cols-2 gap-3 text-center divide-x divide-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs transition-colors">
+        <div className="grid grid-cols-2 gap-3 text-center divide-x divide-slate-100 dark:divide-slate-800">
           <div>
-            <span className="text-xs text-slate-500 block">Total Inventory Cost</span>
-            <span className="text-base font-extrabold text-slate-900 tabular-nums">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block">Total Inventory Cost</span>
+            <span className="text-base font-extrabold text-slate-900 dark:text-white tabular-nums">
               {settings.currency} {totalInventoryCostValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
             </span>
           </div>
           <div>
-            <span className="text-xs text-slate-500 block">Estimated Retail Value</span>
-            <span className="text-base font-extrabold text-emerald-600 tabular-nums">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block">Estimated Retail Value</span>
+            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {settings.currency} {totalInventoryRetailValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
             </span>
           </div>
@@ -157,8 +157,8 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
           onClick={() => setActiveTab('all')}
           className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap shrink-0 ${
             activeTab === 'all'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-slate-900 dark:bg-amber-600 text-white shadow-xs'
+              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
           }`}
         >
           All Items ({activeProducts.length})
@@ -170,7 +170,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
           className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
             activeTab === 'low_stock'
               ? 'bg-amber-600 text-white shadow-xs'
-              : 'bg-white text-amber-800 border border-amber-200 hover:bg-amber-50'
+              : 'bg-white dark:bg-slate-900 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/70 hover:bg-amber-50 dark:hover:bg-amber-950/40'
           }`}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
@@ -183,7 +183,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
           className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
             activeTab === 'out_of_stock'
               ? 'bg-rose-600 text-white shadow-xs'
-              : 'bg-white text-rose-800 border border-rose-200 hover:bg-rose-50'
+              : 'bg-white dark:bg-slate-900 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/70 hover:bg-rose-50 dark:hover:bg-rose-950/40'
           }`}
         >
           <AlertOctagon className="w-3.5 h-3.5" />
@@ -196,7 +196,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
           className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
             activeTab === 'expiry'
               ? 'bg-rose-600 text-white shadow-xs'
-              : 'bg-white text-rose-800 border border-rose-200 hover:bg-rose-50'
+              : 'bg-white dark:bg-slate-900 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/70 hover:bg-rose-50 dark:hover:bg-rose-950/40'
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -209,7 +209,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
           className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
             activeTab === 'ledger'
               ? 'bg-indigo-600 text-white shadow-xs'
-              : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'
+              : 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/70 hover:bg-indigo-50 dark:hover:bg-indigo-950/40'
           }`}
         >
           <TrendingUp className="w-3.5 h-3.5" />
@@ -227,13 +227,13 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
               placeholder="Search stock by name, barcode, or alias..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
           <div className="space-y-2.5">
             {filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 text-xs">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center text-slate-500 dark:text-slate-400 text-xs">
                 No products match "{productSearch}"
               </div>
             ) : (
@@ -245,22 +245,22 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
                 return (
                   <div
                     key={p.product_id}
-                    className={`bg-white rounded-2xl border p-4 shadow-xs space-y-3 transition-all ${
+                    className={`bg-white dark:bg-slate-900 rounded-2xl border p-4 shadow-xs space-y-3 transition-all ${
                       isOut
-                        ? 'border-rose-300 bg-rose-50/20'
+                        ? 'border-rose-300 dark:border-rose-800 bg-rose-50/20 dark:bg-rose-950/30'
                         : isLow
-                        ? 'border-amber-300 bg-amber-50/20'
-                        : 'border-slate-200'
+                        ? 'border-amber-300 dark:border-amber-800 bg-amber-50/20 dark:bg-amber-950/30'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-bold text-slate-900 leading-snug">{p.name}</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{p.name}</h3>
 
-                        <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
-                          <span>Selling: <strong>{settings.currency} {p.selling_price}</strong></span>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
+                          <span>Selling: <strong className="text-slate-900 dark:text-white">{settings.currency} {p.selling_price}</strong></span>
                           <span>·</span>
-                          <span>Cost: <strong>{settings.currency} {p.purchase_price}</strong></span>
+                          <span>Cost: <strong className="text-slate-900 dark:text-white">{settings.currency} {p.purchase_price}</strong></span>
                           <span>·</span>
                           <span>Threshold: {p.low_stock_threshold} {p.unit}</span>
                           {expInfo && (
@@ -269,10 +269,10 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
                               <span
                                 className={`flex items-center gap-1 font-semibold ${
                                   expInfo.isExpired
-                                    ? 'text-rose-600'
+                                    ? 'text-rose-600 dark:text-rose-400'
                                     : expInfo.daysRemaining <= settings.expiry_warning_days
-                                    ? 'text-amber-700'
-                                    : 'text-slate-500'
+                                    ? 'text-amber-700 dark:text-amber-400'
+                                    : 'text-slate-500 dark:text-slate-400'
                                 }`}
                               >
                                 <Clock className="w-3 h-3" />
@@ -288,28 +288,28 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
                         <span
                           className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold tabular-nums ${
                             isOut
-                              ? 'bg-rose-100 text-rose-800'
+                              ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-transparent dark:border-rose-800'
                               : isLow
-                              ? 'bg-amber-100 text-amber-900'
-                              : 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-transparent dark:border-amber-800'
+                              : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-transparent dark:border-emerald-800'
                           }`}
                         >
                           {p.current_stock} {p.unit}
                         </span>
-                        <span className="block text-[11px] text-slate-400 mt-0.5 tabular-nums">
+                        <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 tabular-nums">
                           Value: {settings.currency} {(p.current_stock * p.purchase_price).toFixed(0)}
                         </span>
                       </div>
                     </div>
 
                     {/* Direct Quick Action Triggers */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-1.5">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1.5">
                       <button
                         type="button"
                         onClick={() => handleOpenAction('PURCHASE', p)}
-                        className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-colors flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition-colors flex items-center gap-1 border border-transparent dark:border-emerald-800/60"
                       >
-                        <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <PlusCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>+ Stock</span>
                       </button>
 
@@ -317,18 +317,18 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({ initialTab = '
                         type="button"
                         onClick={() => handleOpenAction('REMOVE_STOCK', p)}
                         disabled={isOut}
-                        className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-40"
+                        className="px-2.5 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-40 border border-transparent dark:border-rose-800/60"
                       >
-                        <MinusCircle className="w-3.5 h-3.5 text-rose-600" />
+                        <MinusCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                         <span>- Loss</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleOpenAction('MANUAL_FIX', p)}
-                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-bold transition-colors flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 text-xs font-bold transition-colors flex items-center gap-1 border border-transparent dark:border-indigo-800/60"
                       >
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-600" />
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                         <span>✏️ Audit Fix</span>
                       </button>
                     </div>

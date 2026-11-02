@@ -16,8 +16,11 @@ import {
   CheckCircle2,
   AlertOctagon,
   RefreshCw,
+  QrCode,
+  FileText,
 } from 'lucide-react';
 import { useInventory } from '../context/InventoryContext';
+import { BillQrModal } from '../components/BillQrModal';
 import { billingService } from '../services/billingService';
 import { Bill, BillItem, Customer, Product, StockLedgerEntry } from '../types/inventory';
 import {
@@ -56,6 +59,22 @@ export const ReportsScreen: React.FC = () => {
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // QR Modal State
+  const [selectedBillForQr, setSelectedBillForQr] = useState<Bill | null>(null);
+  const [selectedBillItemsForQr, setSelectedBillItemsForQr] = useState<BillItem[]>([]);
+  const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
+
+  const handleOpenBillQr = async (bill: Bill) => {
+    try {
+      const items = await billingService.getBillItems(bill.bill_id);
+      setSelectedBillForQr(bill);
+      setSelectedBillItemsForQr(items);
+      setIsQrModalOpen(true);
+    } catch (e) {
+      console.error('Failed to load items for bill:', e);
+    }
+  };
 
   const loadReportData = async () => {
     setIsLoading(true);
@@ -245,8 +264,8 @@ export const ReportsScreen: React.FC = () => {
       {/* Title & CSV Export Quick Bar */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Reports & Analytics</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Reports & Analytics</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Offline sales summaries, profit margins, dead stock, and audit CSV exports
           </p>
         </div>
@@ -255,14 +274,14 @@ export const ReportsScreen: React.FC = () => {
           type="button"
           onClick={loadReportData}
           title="Refresh Report Data"
-          className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       {/* Date Range Selector Tabs */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-2 shadow-xs space-y-2">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-xs space-y-2 transition-colors">
         <div className="flex items-center gap-1">
           {(['today', 'week', 'month', 'custom'] as DateRangeFilter[]).map((tab) => (
             <button
@@ -272,7 +291,7 @@ export const ReportsScreen: React.FC = () => {
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-colors capitalize ${
                 dateRange === tab
                   ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               {tab === 'today' && 'Today'}
@@ -285,23 +304,23 @@ export const ReportsScreen: React.FC = () => {
 
         {/* Custom Date Pickers */}
         {dateRange === 'custom' && (
-          <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">Start Date</label>
+              <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-0.5">Start Date</label>
               <input
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">End Date</label>
+              <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-0.5">End Date</label>
               <input
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium"
               />
             </div>
           </div>
@@ -311,20 +330,20 @@ export const ReportsScreen: React.FC = () => {
       {/* Primary KPI Row: Sales, Bills, Profit */}
       <div className="grid grid-cols-3 gap-2.5">
         {/* Total Sales */}
-        <div className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 block truncate">Total Sales</span>
-          <div className="text-lg font-black text-slate-900 tabular-nums mt-0.5 truncate">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block truncate">Total Sales</span>
+          <div className="text-lg font-black text-slate-900 dark:text-white tabular-nums mt-0.5 truncate">
             {settings.currency} {totalSales.toLocaleString('en-IN')}
           </div>
-          <span className="text-[10px] text-emerald-600 font-semibold block mt-1">
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block mt-1">
             {numberOfBills} completed bills
           </span>
         </div>
 
         {/* Estimated Profit */}
-        <div className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 block truncate">Est. Profit</span>
-          <div className="text-lg font-black text-emerald-600 tabular-nums mt-0.5 truncate">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block truncate">Est. Profit</span>
+          <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums mt-0.5 truncate">
             {settings.currency} {estimatedProfit.toLocaleString('en-IN')}
           </div>
           <span className="text-[10px] text-slate-400 block mt-1 truncate">
@@ -333,49 +352,102 @@ export const ReportsScreen: React.FC = () => {
         </div>
 
         {/* Customer Udhaar */}
-        <div className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 block truncate">Total Udhaar</span>
-          <div className="text-lg font-black text-amber-900 tabular-nums mt-0.5 truncate">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block truncate">Total Udhaar</span>
+          <div className="text-lg font-black text-amber-900 dark:text-amber-300 tabular-nums mt-0.5 truncate">
             {settings.currency} {totalOutstandingUdhaar.toLocaleString('en-IN')}
           </div>
-          <span className="text-[10px] text-amber-700 block mt-1 truncate">
+          <span className="text-[10px] text-amber-700 dark:text-amber-400 block mt-1 truncate">
             {customersWithCredit.length} debtors
           </span>
         </div>
       </div>
 
       {/* Payment Split Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-xs space-y-3">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-          <CreditCard className="w-3.5 h-3.5 text-slate-500" />
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs space-y-3 transition-colors">
+        <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+          <CreditCard className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
           <span>Payment Mode Breakdown</span>
         </h3>
         <div className="grid grid-cols-4 gap-2 text-center text-xs">
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[11px] text-slate-500 block">Cash</span>
-            <span className="text-sm font-bold text-slate-900 tabular-nums block mt-0.5">
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Cash</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums block mt-0.5">
               {settings.currency} {paymentSplit.cash.toLocaleString('en-IN')}
             </span>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[11px] text-slate-500 block">UPI</span>
-            <span className="text-sm font-bold text-emerald-600 tabular-nums block mt-0.5">
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">UPI</span>
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums block mt-0.5">
               {settings.currency} {paymentSplit.upi.toLocaleString('en-IN')}
             </span>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[11px] text-slate-500 block">Card</span>
-            <span className="text-sm font-bold text-indigo-600 tabular-nums block mt-0.5">
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Card</span>
+            <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 tabular-nums block mt-0.5">
               {settings.currency} {paymentSplit.card.toLocaleString('en-IN')}
             </span>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[11px] text-slate-500 block">Udhaar</span>
-            <span className="text-sm font-bold text-amber-800 tabular-nums block mt-0.5">
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Udhaar</span>
+            <span className="text-sm font-bold text-amber-800 dark:text-amber-300 tabular-nums block mt-0.5">
               {settings.currency} {paymentSplit.credit.toLocaleString('en-IN')}
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Customer QR Code Invoices (Immediate Digital Receipt Generation) */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs space-y-3 transition-colors">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+            <QrCode className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span>Customer QR Invoices & Receipts</span>
+          </h3>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">{filteredBills.length} bills in period</span>
+        </div>
+
+        {filteredBills.length === 0 ? (
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2 text-center">
+            No bills in this date range. Create a sale on the Counter to generate QR codes.
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-56 overflow-y-auto">
+            {filteredBills.slice(0, 8).map((b) => (
+              <div
+                key={b.bill_id}
+                className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-xs gap-2"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">#{b.bill_number}</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase font-semibold">
+                      {b.payment_mode}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {new Date(b.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <span className="font-extrabold text-sm text-slate-900 dark:text-white tabular-nums">
+                    {settings.currency} {b.total}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenBillQr(b)}
+                    className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors min-h-[34px]"
+                    title="Generate QR Code for this bill"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>Show QR</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Top-Selling Products */}
@@ -612,6 +684,14 @@ export const ReportsScreen: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Customer Bill QR Code Modal */}
+      <BillQrModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        bill={selectedBillForQr}
+        items={selectedBillItemsForQr}
+      />
     </div>
   );
 };
